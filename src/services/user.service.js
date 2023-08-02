@@ -26,6 +26,34 @@ class UserService {
       params: requestBody,
     });
   }
+
+  getUserList(requestBody) {
+    return axios.get("http://localhost:8080/user/list", {
+      headers: authHeader(),
+      params: requestBody,
+    });
+  }
+
+  getUserRole(requestBody) {
+    return axios.get("http://localhost:8080/user/roles", {
+      headers: authHeader(),
+      params: requestBody,
+    });
+  }
+
+  removeUserRole(requestBody) {
+    return axios.delete("http://localhost:8080/user/roles", {
+      headers: authHeader(),
+      params: requestBody,
+    });
+  }
+
+  saveUserRole(requestBody) {
+    return axios.post("http://localhost:8080/user/roles", {
+      headers: authHeader(),
+      params: requestBody,
+    });
+  }
 }
 
 export default new UserService();
