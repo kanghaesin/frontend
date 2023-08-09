@@ -48,10 +48,12 @@ class UserService {
     });
   }
 
-  saveUserRole(requestBody) {
+  saveUserRole(form) {
     return axios.post("http://localhost:8080/user/roles", {
       headers: authHeader(),
-      params: requestBody,
+      user_id: form.user_id,
+      role_id: form.role_id,
+      roles: form.roles,
     });
   }
 }

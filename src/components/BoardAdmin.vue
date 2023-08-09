@@ -3,40 +3,59 @@
     <header class="jumbotron">
       <h3>{{ content }}</h3>
     </header>
-    <select v-model="selected2" @change="changeSelect">
+    <div style="margin-top: 50px;"></div>
+    <span> 계정 선택 : </span>
+    <select
+      class="form-select form-select-sm"
+      style="width:200px; margin-top: 10px;"
+      v-model="selected2"
+      @change="changeSelect"
+    >
       <option value="">- 선택 -</option>
       <option v-for="item in selectList" :key="item.id" :value="item.id">{{
         item.username
       }}</option>
     </select>
 
-    <div>
+    <div style="margin-top: 50px;">
+      <div style="margin-bottom: 10px;">권한 :</div>
       <!-- input id와 label for 맞추기 -->
       <!-- checked된 value로 양방향 데이터 바인딩 -->
       <input
+        class="form-check-input"
         type="checkbox"
         id="html"
-        value="ROLE_ADMIN"
+        value="3"
         v-model="favoriteLang"
       />
-      <label for="html">관리자</label>
+      <label class="form-check-label" for="html">&nbsp;&nbsp;관리자</label>
     </div>
     <div>
       <input
+        class="form-check-input"
         type="checkbox"
         id="css"
-        value="ROLE_MODERATOR"
+        value="2"
         v-model="favoriteLang"
       />
-      <label for="css">중간담당자</label>
+      <label class="form-check-label" for="css">&nbsp;&nbsp;중간담당자</label>
     </div>
     <div>
-      <input type="checkbox" id="js" value="ROLE_USER" v-model="favoriteLang" />
-      <label for="js">유저</label>
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="js"
+        value="1"
+        v-model="favoriteLang"
+      />
+      <label class="form-check-label" for="js">&nbsp;&nbsp;유저</label>
     </div>
-    <div>선택한 언어: {{ favoriteLang }}</div>
 
-    <button class="w3-button w3-round w3-blue-gray" @click="fnRoleSave()">
+    <button
+      style="margin-top:50px;"
+      class="btn btn-outline-success"
+      @click="fnRoleSave()"
+    >
       저장
     </button>
   </div>
@@ -55,6 +74,8 @@ export default {
       selectList: {},
       roles: {},
       favoriteLang: [],
+      roleVal: [],
+      requestParam: {}, //리스트 페이지 데이터전송
     };
   },
   mounted() {
@@ -90,6 +111,7 @@ export default {
     changeSelect() {
       if (this.selected2 === "") {
         this.favoriteLang = [];
+        this.roleVal = [];
       } else {
         this.requestBody = {
           // 데이터 전송
@@ -98,13 +120,14 @@ export default {
 
         UserService.getUserRole(this.requestBody).then(
           (response) => {
-            console.log("response.data : ", response.data);
             this.roles = response.data.roles;
 
             this.favoriteLang = [];
+            this.roleVal = [];
 
             for (var i in response.data.roles) {
-              this.favoriteLang.push(response.data.roles[i].name);
+              this.favoriteLang.push(response.data.roles[i].id);
+              this.roleVal.push(response.data.roles[i].id);
             }
 
             // checked
@@ -124,28 +147,42 @@ export default {
       this.requestBody = {
         // 데이터 전송
         user_id: this.selected2,
-        roles: this.favoriteLang,
+        roles: this.roleVal.join(","),
       };
 
       // 권한 삭제
       UserService.removeUserRole(this.requestBody).then(
         (response) => {
-          console.log("response.data : ", response.data);
+          if (response.data) {
+            // 권한 추가
+            this.form = {
+              user_id: this.selected2,
+              roles: this.favoriteLang.join(","),
+            };
 
-          // 권한 추가
-          UserService.saveUserRole(this.requestBody).then(
-            (response) => {
-              console.log("response.data : ", response.data);
-            },
-            (error) => {
-              this.content =
-                (error.response &&
-                  error.response.data &&
-                  error.response.data.message) ||
-                error.message ||
-                error.toString();
-            }
-          );
+            UserService.saveUserRole(this.form).then(
+              (response) => {
+                if (response.data) {
+                  this.$swal
+                    .fire({
+                      icon: "success",
+                      title: "성공",
+                      text: "권한이 수정되었습니다.",
+                      confirmButtonText: "확인",
+                    })
+                    .then((result) => {});
+                }
+              },
+              (error) => {
+                this.content =
+                  (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                  error.message ||
+                  error.toString();
+              }
+            );
+          }
         },
         (error) => {
           this.content =
@@ -160,3 +197,5 @@ export default {
   },
 };
 </script>
+
+<style scoped></style>
